@@ -1,0 +1,20 @@
+{
+    "name": "excellence-classes/internship-portal",
+    "description": "Excellence Classes By Repswal - Internship & Certification Management System",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=7.4",
+        "dompdf/dompdf": "^2.0",
+        "chillerlan/php-qrcode": "^5.0"
+    },
+    "autoload": {
+        "files": [
+            "config/database.php",
+            "includes/functions.php"
+        ]
+    },
+    "config": {
+        "vendor-dir": "vendor"
+    }
+}

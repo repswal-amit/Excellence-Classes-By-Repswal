@@ -1,0 +1,49 @@
+# Apache Configuration
+# Excellence Classes By Repswal
+
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes
+
+# Protect sensitive files
+<FilesMatch "\.(env|sql|log|md|json|lock|gitignore)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Protect directories
+RewriteRule ^config/ - [F,L]
+RewriteRule ^includes/ - [F,L]
+RewriteRule ^storage/ - [F,L]
+RewriteRule ^vendor/ - [F,L]
+
+# Allow access to assets
+RewriteRule ^assets/ - [L]
+RewriteRule ^uploads/ - [L]
+
+# Block access to hidden files and directories
+RewriteRule (^|/)\.(?!well-known) - [F]
+
+# PHP error display (disable in production)
+# php_flag display_errors off
+# php_flag log_errors on
+
+# Set default charset
+AddDefaultCharset UTF-8
+
+# Set timezone
+# php_value date.timezone "Asia/Kolkata"
+
+# Increase upload limits
+# php_value upload_max_filesize 10M
+# php_value post_max_size 12M

@@ -1,0 +1,34 @@
+# Dependencies
+/vendor/
+composer.lock
+
+# Environment
+.env
+storage/installed.lock
+
+# Storage
+/storage/certificates/*
+/storage/documents/*
+/storage/logs/*
+!storage/certificates/.gitkeep
+!storage/documents/.gitkeep
+!storage/logs/.gitkeep
+
+# Uploads
+/uploads/*
+!uploads/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
