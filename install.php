@@ -95,16 +95,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$isInstalled) {
             $error = 'Admin password must be at least 8 characters long.';
         } else {
             try {
-                // 1. Test MySQL server connection without DB first
-                $dsnWithoutDb = "mysql:host={$dbHost};port={$dbPort};charset=utf8mb4";
-                $pdo = new PDO($dsnWithoutDb, $dbUser, $dbPass, [
+                // 1. Try connecting directly to the target database first (required on shared hosts like InfinityFree)
+                $pdoOptions = [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_TIMEOUT => 5
-                ]);
-                
-                // 2. Create database if it does not exist
-                $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
-                $pdo->exec("USE `{$dbName}`;");
+                    PDO::ATTR_TIMEOUT => 10
+                ];
+                try {
+                    $dsnWithDb = "mysql:host={$dbHost};port={$dbPort};dbname={$dbName};charset=utf8mb4";
+                    $pdo = new PDO($dsnWithDb, $dbUser, $dbPass, $pdoOptions);
+                } catch (PDOException $connectErr) {
+                    // Fallback for local servers (e.g., XAMPP) where database needs to be created first
+                    $dsnWithoutDb = "mysql:host={$dbHost};port={$dbPort};charset=utf8mb4";
+                    $pdo = new PDO($dsnWithoutDb, $dbUser, $dbPass, $pdoOptions);
+                    $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+                    $pdo->exec("USE `{$dbName}`;");
+                }
                 
                 // 3. Read and execute database.sql
                 $sqlFile = ROOT_PATH . '/database.sql';
@@ -129,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$isInstalled) {
                     $query .= $line . "\n";
                     if (str_ends_with($trimmed, ';')) {
                         // Avoid executing duplicate CREATE DATABASE / USE statements
-                        if (!stripos($query, 'CREATE DATABASE') && !stripos($query, 'USE `excellence_classes`')) {
+                        if (stripos($query, 'CREATE DATABASE') === false && stripos($query, 'USE `excellence_classes`') === false) {
                             try {
                                 $pdo->exec($query);
                             } catch (PDOException $e) {
