@@ -9,35 +9,58 @@
 
 // Load environment variables if .env file exists
 $envFile = __DIR__ . '/../.env';
+$envVars = [];
 if (file_exists($envFile)) {
-    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $content = file_get_contents($envFile);
+    // Strip UTF-8 BOM if present
+    $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
+    $lines = preg_split('/\r\n|\r|\n/', $content);
     foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0) continue;
+        $line = trim($line);
+        if ($line === '' || str_starts_with($line, '#')) continue;
         if (strpos($line, '=') === false) continue;
         list($key, $value) = array_map('trim', explode('=', $line, 2));
-        // Remove surrounding quotes
-        $value = trim($value, '"\'');
-        if (!array_key_exists($key, $_ENV)) {
-            putenv("$key=$value");
-            $_ENV[$key] = $value;
+        // Remove surrounding quotes if any
+        if ((str_starts_with($value, '"') && str_ends_with($value, '"')) ||
+            (str_starts_with($value, "'") && str_ends_with($value, "'"))) {
+            $value = substr($value, 1, -1);
         }
+        $envVars[$key] = $value;
+        @putenv("$key=$value");
+        $_ENV[$key] = $value;
+        $_SERVER[$key] = $value;
     }
 }
 
+// Helper to retrieve an environment variable reliably across shared and local hosts
+$getEnv = function(string $key, $default = null) use ($envVars) {
+    if (array_key_exists($key, $envVars)) {
+        return $envVars[$key];
+    }
+    if (isset($_ENV[$key])) {
+        return $_ENV[$key];
+    }
+    if (isset($_SERVER[$key])) {
+        return $_SERVER[$key];
+    }
+    $val = @getenv($key);
+    return ($val !== false && $val !== '') ? $val : $default;
+};
+
 // Database configuration
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_PORT', getenv('DB_PORT') ?: '3306');
-define('DB_NAME', getenv('DB_NAME') ?: 'excellence_classes');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') ?: '');
+define('DB_HOST', $getEnv('DB_HOST', 'localhost'));
+define('DB_PORT', $getEnv('DB_PORT', '3306'));
+define('DB_NAME', $getEnv('DB_NAME', 'excellence_classes'));
+define('DB_USER', $getEnv('DB_USER', 'root'));
+define('DB_PASS', $getEnv('DB_PASS', ''));
 define('DB_CHARSET', 'utf8mb4');
 
 // Application configuration
-define('APP_NAME', 'Excellence Classes By Repswal');
+define('APP_NAME', $getEnv('APP_NAME', 'Excellence Classes By Repswal'));
 define('APP_TAGLINE', 'Learn. Develop. Grow.');
-define('APP_URL', getenv('APP_URL') ?: 'http://localhost/excellence-classes');
-define('APP_ENV', getenv('APP_ENV') ?: 'development');
-define('APP_DEBUG', getenv('APP_DEBUG') ? filter_var(getenv('APP_DEBUG'), FILTER_VALIDATE_BOOLEAN) : true);
+define('APP_URL', $getEnv('APP_URL', 'http://localhost/excellence-classes'));
+define('APP_ENV', $getEnv('APP_ENV', 'development'));
+define('APP_DEBUG', filter_var($getEnv('APP_DEBUG', true), FILTER_VALIDATE_BOOLEAN));
 
 // Session configuration
 define('SESSION_LIFETIME', 3600); // 1 hour

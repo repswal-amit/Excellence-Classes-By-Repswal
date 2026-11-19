@@ -141,6 +141,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_admin_login'])
                             <h6 class="fw-bold mb-1">Database Setup Required</h6>
                             <p class="small text-muted mb-2">
                                 Unable to connect to MySQL. Configure credentials in <code>.env</code> or run the setup wizard.
+                                <?php if (!empty($dbError)): ?>
+                                    <br><span class="text-danger small font-monospace">Details: <?= e($dbError) ?></span>
+                                <?php endif; ?>
                             </p>
                             <a href="<?= baseUrl('install.php') ?>" class="btn btn-warning btn-sm fw-semibold">
                                 <i class="bi bi-magic me-1"></i> Open Setup Wizard
