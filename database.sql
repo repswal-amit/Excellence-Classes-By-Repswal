@@ -448,7 +448,7 @@ INSERT INTO `admin_roles` (`role_name`, `role_slug`, `description`, `permissions
 -- Default password hash is for: Admin@123 (MUST be changed immediately)
 -- ============================================================
 INSERT INTO `admins` (`role_id`, `full_name`, `email`, `password`, `designation`, `is_active`) VALUES
-(2, 'Amit Repswal', 'admin@excellenceclasses.com', '$2y$12$LJ3m8CqShMgKzR.8VZp0aeYxJHnEV5rN6tL0wK4X5qPmD1yFjGXi2', 'Proprietor', 1);
+(2, 'Amit Repswal', 'admin@excellenceclasses.com', '$2y$10$w6kJU1Xbl20LaHXxi7tPlej8CUn4ZbcdT7Plsh/S5kaIsaH6Hzx16', 'Proprietor', 1);
 
 -- ============================================================
 -- SEED DATA: Website Settings
